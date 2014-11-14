@@ -84,6 +84,10 @@ def grab_matches(seedid=43731318, num_matches=100):
 	return matches_summoners
 
 def include_stats(matches_summoners):
+	'''
+	Replaces list of summonerids (in the returned dictionary from get_matches) 
+	with a list of player_stat_summaries as defined in the riot API 
+	'''
 
 	w = RiotWatcher(key)
 
