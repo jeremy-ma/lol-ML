@@ -74,6 +74,7 @@ def grab_matches(seedid=43731318, num_matches=100):
 							break
 
 					matches_summoners[matchid] = (team_summonerids,winning_team)
+					print matchid
 
 					count += 1
 
@@ -93,6 +94,7 @@ def include_stats(matches_summoners):
 	w = RiotWatcher(key)
 
 	for matchid, (team_lists,_) in matches_summoners.items():
+		print matchid
 		for teamid, teamlist in team_lists.items():
 			for index, summoner_id in enumerate(teamlist):
 				# replace the summonerid with player stat summary
@@ -194,8 +196,8 @@ if __name__ == "__main__":
 	with open('data' + str(seedid) + '.json','w') as fp:
 		json.dump(matches,fp)
 
-	calculate_features(matches)
-	dump_data(seedid)
+	feat,label calculate_features(matches)
+	dump_data(feat,label,seedid=seedid)
 	
 
 
