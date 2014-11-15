@@ -97,6 +97,7 @@ def include_stats(matches_summoners):
 			for index, summoner_id in enumerate(teamlist):
 				# replace the summonerid with player stat summary
 				wait(w)
+				wait(w)
 				teamlist[index] = w.get_ranked_stats(summoner_id)
 
 	return matches_summoners
@@ -123,13 +124,13 @@ def calculate_features(matches_summoners):
 
 	return (feature_mat, label_mat)
 
-def dump_data(feature_mat, label_mat):
+def dump_data(feature_mat, label_mat, seedid=43731318):
 
 	feature_mat = np.array(feature_mat)
 	label_mat = np.array(label_mat)
 
-	np.savetxt('X.csv', feature_mat, delimiter=',')
-	np.savetxt('y.csv', label_mat, delimiter=',')
+	np.savetxt('X' + str(seedid) +'.csv', feature_mat, delimiter=',')
+	np.savetxt('y' + str(seedid) + '.csv', label_mat, delimiter=',')
 
 def featurize_team(team):
 
@@ -185,15 +186,16 @@ def featurize_team(team):
 
 
 if __name__ == "__main__":
-	
-	matches = grab_matches(num_matches=100)
+	seedid = 43731318
+	matches = grab_matches(seedid=seedid, num_matches=100)
 
 	matches = include_stats(matches)
 
-	with open('data.json','w') as fp:
+	with open('data' + str(seedid) + '.json','w') as fp:
 		json.dump(matches,fp)
 
-	
+	calculate_features(matches)
+	dump_data(seedid)
 	
 
 
