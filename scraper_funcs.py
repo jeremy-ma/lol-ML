@@ -100,6 +100,47 @@ def include_stats(matches_summoners):
 
 	return matches_summoners
 
+def calculate_features(matches_summoners):
+
+	for matchid, (team_list, winner) in matches_summoners.items():
+
+		for teamid, team in team_list.items():
+			stat_list = featurize_team(team):
+
+
+
+
+
+def featurize_team(team):
+
+	features =[ 'botGamesPlayed', 'killingSpree', 'normalGamesPlayed','rankedPremadeGamesPlayed','rankedSoloGamesPlayed',
+			   'totalAssists','totalChampionKills','totalDamageDealt','totalDamageTaken','totalGoldEarned',
+			   'totalHeal''totalFirstBlood','totalMinionKills','totalNeutralMinionsKilled','totalPhysicalDamageDealt',
+			   'totalMagicDamageDealt','totalPentaKills','totalTurretsKilled', 'totalSessionsPlayed','totalSessionsWon',
+			   'totalSessionsLost' ]
+
+	totals_dict = defaultdict(list)
+
+	for player in team:
+		player_features = defaultdict(int)
+		for champion_summary in stat_summary['champions']:
+			# grab all features
+			for feature, value in champion_summary.items():
+				player_features[feature] += value
+				totals_dict[feature] += value
+
+	# now average the list for each feature in totals_dict
+
+	for feature, lest in totals_dict:
+		totals_dict[feature] = float(sum(lest)) / len(lest)
+
+	
+
+
+
+
+
+
 
 if __name__ == "__main__":
 
