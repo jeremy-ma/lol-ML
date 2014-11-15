@@ -4,6 +4,7 @@ from collections import defaultdict
 import pdb
 import time
 import json
+import numpy as np
 
 key = '9213b085-ed48-4bf0-af91-d8fa519e3b35'
 
@@ -102,54 +103,98 @@ def include_stats(matches_summoners):
 
 def calculate_features(matches_summoners):
 
-	for matchid, (team_list, winner) in matches_summoners.items():
+	label_mat = []
+	feature_mat = []
 
-		for teamid, team in team_list.items():
-			stat_list = featurize_team(team):
+	for matchid, (team_dict, winner) in matches_summoners.items():
 
+		team100 = team_dict['100']
+		feat_100 = featurize_team(team100)
+		team200 = team_dict['200']
+		feat_200 = featurize_team(team200)
 
+		feat_vect = feat_100 + feat_200
 
+		feature_mat.append(feat_vect)
+		if winner == '100':
+			label_mat.append(0)
+		else:
+			label_mat.append(1)
 
+	return (feature_mat, label_mat)
+
+def dump_data(feature_mat, label_mat):
+
+	feature_mat = np.array(feature_mat)
+	label_mat = np.array(label_mat)
+
+	np.savetxt('X.csv', feature_mat, delimiter=',')
+	np.savetxt('y.csv', label_mat, delimiter=',')
 
 def featurize_team(team):
 
-	features =[ 'botGamesPlayed', 'killingSpree', 'normalGamesPlayed','rankedPremadeGamesPlayed','rankedSoloGamesPlayed',
-			   'totalAssists','totalChampionKills','totalDamageDealt','totalDamageTaken','totalGoldEarned',
-			   'totalHeal''totalFirstBlood','totalMinionKills','totalNeutralMinionsKilled','totalPhysicalDamageDealt',
-			   'totalMagicDamageDealt','totalPentaKills','totalTurretsKilled', 'totalSessionsPlayed','totalSessionsWon',
-			   'totalSessionsLost' ]
+	
+	features =[ 'totalPhysicalDamageDealt','totalTurretsKilled','totalSessionsPlayed','totalAssists','totalDamageDealt',
+				'mostChampionKillsPerSession','totalPentaKills','mostSpellsCast','totalDoubleKills','maxChampionsKilled',
+				'totalDeathsPerSession','totalSessionsWon','totalGoldEarned','totalTripleKills','totalChampionKills',
+				'maxNumDeaths','totalMinionKills','totalMagicDamageDealt','totalQuadraKills','totalUnrealKills',
+				'totalDamageTaken','totalSessionsLost','totalFirstBlood' ]
+
+	feature_set = set(features)
 
 	totals_dict = defaultdict(list)
 
 	for player in team:
-		player_features = defaultdict(int)
-		for champion_summary in stat_summary['champions']:
+		champions_features = defaultdict(list)
+		for champion_summary in player['champions']:
 			# grab all features
-			for feature, value in champion_summary.items():
-				player_features[feature] += value
-				totals_dict[feature] += value
+			for feature, value in champion_summary['stats'].items():
+				if feature in feature_set:
+					champions_features[feature].append(value)
+
+				
+		# do some processing
+		player_features = {}
+		for feature, lest in champions_features.items():
+
+			if feature != 'totalSessionsPlayed' or feature != 'mostChampionKillsPerSession' or \
+				feature != 'maxNumDeaths':
+				#aggregate over champions, divide by number of sessions
+				player_features[feature] = float(sum(lest)) / sum(champions_features['totalSessionsPlayed'])
+			elif feature == 'totalSessionsPlayed':
+				#simply store
+				player_features[feature] = sum(champions_features['totalSessionsPlayed'])
+			else:
+				#divide by the number of champions
+				player_features[feature] = float(sum(lest)) / len(lest)
+
+		for feature, value in player_features.items():
+
+			totals_dict[feature].append(value)
 
 	# now average the list for each feature in totals_dict
 
-	for feature, lest in totals_dict:
+	for feature, lest in totals_dict.items():
 		totals_dict[feature] = float(sum(lest)) / len(lest)
 
-	
 
+	feature_list = [x[1] for x in sorted(totals_dict.items())]
+	# pdb.set_trace()
 
-
-
-
+	return feature_list
 
 
 if __name__ == "__main__":
-
-	matches = grab_matches(num_matches=10)
+	
+	matches = grab_matches(num_matches=100)
 
 	matches = include_stats(matches)
 
 	with open('data.json','w') as fp:
 		json.dump(matches,fp)
+
+	
+	
 
 
 
