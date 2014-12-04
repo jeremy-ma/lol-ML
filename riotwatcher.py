@@ -179,7 +179,7 @@ class RateLimit:
 
 
 class RiotWatcher:
-    def __init__(self, key, default_region=NORTH_AMERICA, limits=(RateLimit(10, 10), RateLimit(500, 600), )):
+    def __init__(self, key, default_region=NORTH_AMERICA, limits=(RateLimit(9, 10), RateLimit(450, 600), )):
         self.key = key
         self.default_region = default_region
         self.limits = limits

@@ -6,7 +6,8 @@ import time
 import json
 import numpy as np
 
-key = '9213b085-ed48-4bf0-af91-d8fa519e3b35'
+key = '66654a53-7b46-4e32-a951-1df0367baebd'
+w = None
 
 def wait(w):
     while not w.can_make_request():
@@ -31,8 +32,7 @@ def grab_matches(seedid=43731318, num_matches=100):
 
 
 
-	w = RiotWatcher(key)
-
+	#global w
 	sid_queue = Queue.Queue()
 	count = 0
 
@@ -74,7 +74,7 @@ def grab_matches(seedid=43731318, num_matches=100):
 							break
 
 					matches_summoners[matchid] = (team_summonerids,winning_team)
-					print matchid
+					print (str(count + 1) + " " + str(matchid))
 
 					count += 1
 
@@ -91,14 +91,16 @@ def include_stats(matches_summoners):
 	with a list of player_stat_summaries as defined in the riot API 
 	'''
 
-	w = RiotWatcher(key)
+	#global w
+	count = 0
+
 
 	for matchid, (team_lists,_) in matches_summoners.items():
-		print matchid
+		count += 1
+		print (str(count) + " " + str(matchid))
 		for teamid, teamlist in team_lists.items():
 			for index, summoner_id in enumerate(teamlist):
 				# replace the summonerid with player stat summary
-				wait(w)
 				wait(w)
 				teamlist[index] = w.get_ranked_stats(summoner_id)
 
@@ -111,15 +113,15 @@ def calculate_features(matches_summoners):
 
 	for matchid, (team_dict, winner) in matches_summoners.items():
 
-		team100 = team_dict['100']
+		team100 = team_dict[100]
 		feat_100 = featurize_team(team100)
-		team200 = team_dict['200']
+		team200 = team_dict[200]
 		feat_200 = featurize_team(team200)
 
 		feat_vect = feat_100 + feat_200
 
 		feature_mat.append(feat_vect)
-		if winner == '100':
+		if winner == 100:
 			label_mat.append(0)
 		else:
 			label_mat.append(1)
@@ -188,15 +190,18 @@ def featurize_team(team):
 
 
 if __name__ == "__main__":
-	seedid = 43731318
-	matches = grab_matches(seedid=seedid, num_matches=100)
+	#global w
+	#time.sleep(600)
+	w = RiotWatcher(key)
+	seedid = 19976919
+	matches = grab_matches(seedid=seedid, num_matches=1000)
 
 	matches = include_stats(matches)
 
 	with open('data' + str(seedid) + '.json','w') as fp:
 		json.dump(matches,fp)
 
-	feat,label calculate_features(matches)
+	feat,label =  calculate_features(matches)
 	dump_data(feat,label,seedid=seedid)
 	
 
